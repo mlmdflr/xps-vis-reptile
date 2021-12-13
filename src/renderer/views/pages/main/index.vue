@@ -47,7 +47,7 @@
         <ElFooter>
           <ElRow>
             <ElCol>
-              <ElCard class="box-card" style="height: 400px;">
+              <ElCard class="box-card" style="height: 300px;">
                 <template #header>
                   <ElSpace wrap>
                     <ElCheckbox @change="AllCImgChange">全选</ElCheckbox>
@@ -55,14 +55,11 @@
                     <ElButton @click="domCoreVisb = true" size="mini">解析</ElButton>
 
                     <ElButton @click="imgBtn" size="mini">img标签解析</ElButton>
-                    <ElButton size="mini">下载到本地</ElButton>
-                    <div v-for="r in rule">
-                      <ElCheckbox @change="endChange($event, r)">{{ r }}</ElCheckbox>
-                    </div>
+                    <ElButton size="mini" @click="download">下载到本地</ElButton>
                   </ElSpace>
                 </template>
                 <div v-if="imgShow">
-                  <ElScrollbar height="340px" :key="imgShowKey">
+                  <ElScrollbar height="200px">
                     <ElSpace wrap>
                       <div v-for="u in imgUrls">
                         <ElCard @click="cimgUrlsChange(u.id)">
@@ -77,6 +74,16 @@
                         </ElCard>
                       </div>
                     </ElSpace>
+                  </ElScrollbar>
+                </div>
+                <div v-if="treeDataShow">
+                  <ElScrollbar height="340px">
+                    <ElTree
+                      class="eltr"
+                      :data="treeData"
+                      show-checkbox
+                      @check-change="treeDataClickChange"
+                    />
                   </ElScrollbar>
                 </div>
               </ElCard>
@@ -115,7 +122,7 @@
 
       <template #footer>
         <span class="dialog-footer">
-          <el-button type="primary" @click="domCore">开始</el-button>
+          <el-button type="primary" @click="domCore(undefined)">开始</el-button>
         </span>
       </template>
     </ElDialog>
@@ -135,7 +142,7 @@ import {
   windowBlurFocusOn
 } from '@/renderer/common/window';
 import Head from "@/renderer/views/components/head/index.vue";
-import { ElRow, ElCol, ElMain, ElHeader, ElCheckbox, ElFooter, ElContainer, ElInput, ElButton, ElScrollbar, ElPopover, ElDialog, ElSpace, ElImage, ElCard, ElMessage, ElSelect, ElOption } from "element-plus";
+import { ElRow, ElCol, ElMain, ElHeader, ElCheckbox, ElFooter, ElContainer, ElInput, ElTree, ElButton, ElScrollbar, ElDialog, ElSpace, ElImage, ElCard, ElMessage, ElSelect, ElOption } from "element-plus";
 import { ArrowLeftBold, ArrowRightBold } from '@element-plus/icons'
 import { isNull } from '@/lib/util';
 
@@ -144,27 +151,33 @@ let atUrl = ref('')
 let tit = ref('')
 let rCount = ref('')
 let imgUrls = ref<[{ id: string, ckb: boolean, url: string }]>([] as unknown as [{ id: string, ckb: false, url: string }])
+
+
 let code = ref('')
 
 let imgShow = ref(false)
-let imgShowKey = ref(0)
+let treeDataShow = ref(false)
+
 let domCoreVisb = ref(false)
 
-let rule = ['.jpg', '.png', '.gif', '.mp4', '.pdf', '.mp3', '其他']
+
+let treeData = reactive([{
+  label: '.png',
+  children: [] as any[],
+}])
+
+
 let tabRule = ['source', 'img', 'video', 'audio', 'a', 'link']
 let atbRule = ['src', 'href']
 
 let atTabRule = ref([])
 let atAtbRule = ref([])
 
-
 let body = ref('')
 
 let seData = ref([])
-let dealSeData = ref([])
 
 let enData = ref([])
-let dealenData = ref([])
 
 
 onMounted(() => {
@@ -172,19 +185,42 @@ onMounted(() => {
   // window.ipc.invoke('inje-get-example', { wid: 0, rid: customize.get().id })
 });
 
-const endChange = (val: any, fm: string) => {
-
+const treeDataClickChange = (data: any) => {
+  if (seData.value.indexOf(data.label) === -1) {
+    seData.value.push(data.label)
+  } else {
+    seData.value.splice(seData.value.indexOf(data.label), 1)
+  }
 }
 
-
 const AllCImgChange = () => {
-  for (let key = 0; key < imgUrls.value.length; key++) {
-    imgUrls.value[key].ckb = !imgUrls.value[key].ckb
-    if (imgUrls.value[key].ckb) {
-      seData.value.push(imgUrls.value[key].url)
-    } else {
-      seData.value.splice(seData.value.indexOf(imgUrls.value[key].url), 1)
+  let l = seData.value.length
+  for (let index = 0; index < l; index++) {
+    seData.value.splice(0, 1)
+  }
+  if (imgShow.value) {
+    for (let key = 0; key < imgUrls.value.length; key++) {
+      imgUrls.value[key].ckb = !imgUrls.value[key].ckb
+      if (imgUrls.value[key].ckb) {
+        seData.value.push(imgUrls.value[key].url)
+      } else {
+        seData.value.splice(seData.value.indexOf(imgUrls.value[key].url), 1)
+      }
     }
+  }
+  if (treeDataShow.value) {
+    document.querySelectorAll('.eltr .el-checkbox__original').forEach(x => (x as unknown as any).click())
+    console.log(treeData);
+    for (const t of treeData) {
+      for (const t1 of t.children) {
+        console.log(t1.label);
+        
+        if (t1.label.length >= 4) {
+          seData.value.push(t1)
+        }
+      }
+    }
+    console.log(seData.value);
   }
 }
 
@@ -200,7 +236,6 @@ const cimgUrlsChange = (id: string) => {
       break
     }
   }
-  console.log(seData.value);
 }
 const back = () => {
   window.ipc.invoke('inje-back', { wid: 0 })
@@ -212,23 +247,101 @@ const forward = () => {
 
 const imgBtn = async () => {
   imgShow.value = true
-  // imgShowKey.value = imgShowKey.value + 1
-  // window.ipc.invoke('inje', { wid: 0, code: await window.ipc.invoke('inje-get-example', { wid: 0, rid: customize.get().id }) }).catch(err => {
-  //   ElMessage.error('代码错误')
-  // })
+  treeDataShow.value = false
 }
 
-const domCore = async () => {
+const domCore = async (data: any) => {
   domCoreVisb.value = false
   let s = []
   let as = []
+  let lg = treeData.length
+  for (let index = 0; index < lg; index++) {
+    treeData.splice(0, 1)
+  }
   for (const a of atTabRule.value) {
     s.push(a)
   }
   for (const a of atAtbRule.value) {
     as.push(a)
   }
-  enData.value = await window.ipc.invoke('inje-jsdom', { body: body.value, attributes: as, select: s })
+  if (!data) {
+    enData.value = await window.ipc.invoke('inje-jsdom', { body: body.value, attributes: as, select: s })
+  } else {
+    enData.value = data
+  }
+  let jpg = {
+    label: '.jpg',
+    children: [] as any[],
+  }
+
+  let png = {
+    label: '.png',
+    children: [] as any[],
+  };
+  let gif = {
+    label: '.gif',
+    children: [] as any[],
+  }
+  let mp4 = {
+    label: '.mp4',
+    children: [] as any[],
+  }
+  let pdf = {
+    label: '.pdf',
+    children: [] as any[],
+  }
+  let mp3 = {
+    label: '.mp3',
+    children: [] as any[],
+  }
+  let other = {
+    label: '其他',
+    children: [] as any[],
+  }
+  for (const i of enData.value) {
+    switch (i.substring(i.lastIndexOf('.'))) {
+      case '.jpg':
+        jpg.children.push({ label: i })
+        break;
+      case '.png':
+        png.children.push({ label: i })
+        break;
+      case '.gif':
+        gif.children.push({ label: i })
+        break;
+      case '.mp4':
+        mp4.children.push({ label: i })
+        break;
+      case '.pdf':
+        pdf.children.push({ label: i })
+        break;
+      case '.mp3':
+        mp3.children.push({ label: i })
+        break;
+      default:
+        other.children.push({ label: i })
+        break;
+    }
+  }
+  treeDataShow.value = true
+  imgShow.value = false
+  treeData.push(jpg, png, gif, mp4, pdf, mp3, other)
+}
+
+const download = () => {
+  let cmd = ''
+  for (const iterator of seData.value) {
+    cmd += `'${iterator}',`
+  }
+  cmd.substring(0, cmd.lastIndexOf(','))
+  window.ipc.invoke('inje', {
+    wid: 0, code: `
+    let seData = [${cmd}]
+    core(seData)
+  ` }).catch(err => {
+      ElMessage.error('代码错误')
+    })
+
 }
 
 const jnjeJs = () => {
@@ -240,6 +353,8 @@ const jnjeJs = () => {
 const loadUrl = () => {
   window.ipc.invoke('inje-load-url', { wid: 0, url: atUrl.value })
 }
+
+
 windowMessageOn("inje-get-example", (event, args) => {
   atUrl.value = args.url
   tit.value = args.title
@@ -249,7 +364,6 @@ windowMessageOn("inje-get-example", (event, args) => {
     imgUrls.value.push({ id: key, ckb: false, url: args.imgUrls[key] })
   }
   body.value = (args.body as string).replaceAll(`\t`, '').replaceAll('\n', '')
-  console.log(imgUrls);
 })
 
 

@@ -3,10 +3,17 @@ import Window from "../modular/window";
 import { deepCopy, isNull, ranDom } from "@/lib/util";
 import { snowflake } from "@/lib/util/snowflake";
 import { JSDOM } from "jsdom";
+import { Global } from "../modular/general/global";
+import { readFile } from "../modular/general/file";
 
 export function init(wid: number | bigint, rid: number | bigint) {
     const w = Window.get(wid)
-    w.webContents.on('did-finish-load', () => {
+    w.webContents.on('did-finish-load', async () => {
+
+        w.webContents.executeJavaScript(`${await readFile(Global.getInstance().getInsidePath('net.js'))}`)
+        w.webContents.executeJavaScript(`${await readFile(Global.getInstance().getInsidePath('path.fs.js'))}`)
+        w.webContents.executeJavaScript(`${await readFile(Global.getInstance().getInsidePath('snowflake.js'))}`)
+        w.webContents.executeJavaScript(`${await readFile(Global.getInstance().getInsidePath('core.js'))}`)
         w.webContents.executeJavaScript(`
         //发送消息给工具窗口
         function windowMessageSend(
@@ -71,7 +78,6 @@ function inje_get_example(wid: number | bigint, rid: number | bigint) {
         },false,[${rid}])
     `
 }
-
 
 
 export function injeOn() {

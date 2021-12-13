@@ -92,6 +92,13 @@
       "filter": [
         "**/*"
       ]
+    },
+    {
+      "from": "src/lib/resources/platform/win32",
+      "to": "platform/win32",
+      "filter": [
+        "**/*"
+      ]
     }
   ]
 }

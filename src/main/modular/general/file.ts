@@ -156,16 +156,26 @@ export async function mkdir(path: string, options: MakeDirectoryOptions) {
  */
 export async function writeFile(
   path: string,
-  data: string | Buffer,
+  data: string | Buffer | ArrayBuffer,
   options?: { encoding?: BufferEncoding; mode?: number | string; flag?: string }
 ) {
-  return new Promise((resolve) =>
-    fs.writeFile(path, data, options, (err) => {
-      if (err) {
-        resolve(0);
-      }
-      resolve(1);
-    })
+  return new Promise((resolve) => {
+    if (typeof data === 'string') {
+      fs.writeFile(path, data, options, (err) => {
+        if (err) {
+          resolve(0);
+        }
+        resolve(1);
+      })
+    } else {
+      fs.writeFile(path, Buffer.from(data), options, (err) => {
+        if (err) {
+          resolve(0);
+        }
+        resolve(1);
+      })
+    }
+  }
   );
 }
 
