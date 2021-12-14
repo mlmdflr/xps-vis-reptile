@@ -13,7 +13,7 @@
                                   href="/index.php/vod/play/id/137242/sid/1/nid/1.html"
                                   title="sadsadsad"
                                   data-original="https://xxx.xx.com/img/covers/CE5BF6B2CA8E803E.jpg"
-                                  style="background: url(https://img01.pp3q.com:58888/img/covers/CE5BF6B2CA8E803E.jpg) no-repeat; background-position:50% 50%; background-size: cover;"></a>
+                                  style="background: url(https://xxx.xx.com/img/covers/CE5BF6B2CA8E803E.jpg) no-repeat; background-position:50% 50%; background-size: cover;"></a>
     <div class="stui-vodlist__detail">
         <h4 class="text-title"><a
                                   href="/index.php/vod/play/id/137242/sid/1/nid/1.html"
