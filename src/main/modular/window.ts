@@ -27,13 +27,13 @@ export function browserWindowInit(args: BrowserWindowConstructorOptions): Browse
   let opt: BrowserWindowConstructorOptions = Object.assign(args, {
     autoHideMenuBar: true,
     titleBarStyle: args.customize.route ? 'hidden' : 'default',
-    frame: isLocal,
+    frame: false,
     show: isNull(args.show) ? isLocal : args.show,
     webPreferences: {
       preload: join(__dirname, './preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      devTools: !app.isPackaged,
+      devTools: isNull(args.webPreferences?.devTools) ? !app.isPackaged : args.webPreferences?.devTools,
       webSecurity: false
     }
   });

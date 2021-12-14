@@ -1,7 +1,7 @@
 {
   "name": "xps-reptile",
   "productName": "reptileTool",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "reptileTool",
   "main": "dist/js/main.js",
   "author": {

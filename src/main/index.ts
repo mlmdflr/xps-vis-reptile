@@ -36,9 +36,10 @@ Window.create(
     show: false,
     customize: {
       id: 0,
-      url: 'https://www.ku137.net/',
+      url: 'https://wallhaven.cc',
       isMainWin: true
-    }
+    },
+    frame:true
   }
 );
 

@@ -9,8 +9,11 @@
             <ElCol :span="4">
               <ElButton @click="back" size="mini" :icon="ArrowLeftBold" circle></ElButton>
             </ElCol>
-            <ElCol :span="14">
-              <ElInput v-model="atUrl" size="mini"></ElInput>
+            <ElCol :span="10">
+              <ElInput v-model="atUrl" size="mini" placeholder="url" ></ElInput>
+            </ElCol>
+            <ElCol :span="4">
+              <ElInput v-model="userAgent" size="mini" placeholder="userAgent"></ElInput>
             </ElCol>
             <ElCol :offset="2" :span="4">
               <ElButton @click="forward" size="mini" :icon="ArrowRightBold" circle></ElButton>
@@ -47,14 +50,14 @@
         <ElFooter>
           <ElRow>
             <ElCol>
-              <ElCard class="box-card" style="height: 300px;">
+              <ElCard class="box-card" style="height: 400px;">
                 <template #header>
                   <ElSpace wrap>
                     <ElCheckbox @change="AllCImgChange">全选</ElCheckbox>
-
                     <ElButton @click="domCoreVisb = true" size="mini">解析</ElButton>
-
-                    <ElButton @click="imgBtn" size="mini">img标签解析</ElButton>
+                    <ElButton @click="imgBtn" size="mini">img标签解析</ElButton>超时时间:
+                    <ElInputNumber size="mini" v-model="timeout" :step="1000"></ElInputNumber>间隔时间:
+                    <ElInputNumber size="mini" v-model="time" :step="500"></ElInputNumber>
                     <ElButton size="mini" @click="download">下载到本地</ElButton>
                   </ElSpace>
                 </template>
@@ -63,7 +66,7 @@
                     <ElSpace wrap>
                       <div v-for="u in imgUrls">
                         <ElCard @click="cimgUrlsChange(u.id)">
-                          <ElImage style="width: 100px;" :key="u.id" :src="u.url"></ElImage>
+                          <ElImage style="width: 100px;" :key="u.id" :src="u.url" :preview-src-list="[u.url]"></ElImage>
                           <div class="cbox">
                             <ElCheckbox
                               :class="'cbox' + u.id"
@@ -77,7 +80,7 @@
                   </ElScrollbar>
                 </div>
                 <div v-if="treeDataShow">
-                  <ElScrollbar height="340px">
+                  <ElScrollbar height="400px">
                     <ElTree
                       class="eltr"
                       :data="treeData"
@@ -142,9 +145,20 @@ import {
   windowBlurFocusOn
 } from '@/renderer/common/window';
 import Head from "@/renderer/views/components/head/index.vue";
-import { ElRow, ElCol, ElMain, ElHeader, ElCheckbox, ElFooter, ElContainer, ElInput, ElTree, ElButton, ElScrollbar, ElDialog, ElSpace, ElImage, ElCard, ElMessage, ElSelect, ElOption } from "element-plus";
+import {
+  ElRow, ElCol, ElMain, ElHeader, ElCheckbox, ElFooter,
+  ElContainer, ElInput, ElTree, ElButton, ElScrollbar, ElDialog,
+  ElSpace, ElImage, ElCard, ElMessage, ElSelect, ElOption,
+  ElInputNumber, ElNotification
+} from "element-plus";
 import { ArrowLeftBold, ArrowRightBold } from '@element-plus/icons'
 import { isNull } from '@/lib/util';
+import { snowflake } from '@/lib/util/snowflake';
+
+let timeout = ref(3000)
+
+let time = ref(200)
+
 
 
 let atUrl = ref('')
@@ -160,6 +174,7 @@ let treeDataShow = ref(false)
 
 let domCoreVisb = ref(false)
 
+let userAgent = ref('iPhone')
 
 let treeData = reactive([{
   label: '.png',
@@ -198,6 +213,8 @@ const AllCImgChange = () => {
   for (let index = 0; index < l; index++) {
     seData.value.splice(0, 1)
   }
+
+
   if (imgShow.value) {
     for (let key = 0; key < imgUrls.value.length; key++) {
       imgUrls.value[key].ckb = !imgUrls.value[key].ckb
@@ -210,17 +227,13 @@ const AllCImgChange = () => {
   }
   if (treeDataShow.value) {
     document.querySelectorAll('.eltr .el-checkbox__original').forEach(x => (x as unknown as any).click())
-    console.log(treeData);
     for (const t of treeData) {
       for (const t1 of t.children) {
-        console.log(t1.label);
-        
         if (t1.label.length >= 4) {
           seData.value.push(t1)
         }
       }
     }
-    console.log(seData.value);
   }
 }
 
@@ -273,7 +286,6 @@ const domCore = async (data: any) => {
     label: '.jpg',
     children: [] as any[],
   }
-
   let png = {
     label: '.png',
     children: [] as any[],
@@ -330,14 +342,28 @@ const domCore = async (data: any) => {
 
 const download = () => {
   let cmd = ''
-  for (const iterator of seData.value) {
-    cmd += `'${iterator}',`
+  for (let index = 0; index < seData.value.length; index++) {
+    console.log(seData.value[index]);
+    if (index === seData.value.length - 1) {
+      if (seData.value[index]?.label) {
+        cmd += `'${seData.value[index].label}'`
+      } else {
+        cmd += `'${seData.value[index]}'`
+      }
+    } else {
+      if (seData.value[index]?.label) {
+        cmd += `'${seData.value[index].label}',`
+      } else {
+        cmd += `'${seData.value[index]}',`
+      }
+    }
   }
   cmd.substring(0, cmd.lastIndexOf(','))
+  const id = new snowflake(1n, 2n).nextId().toString()
   window.ipc.invoke('inje', {
     wid: 0, code: `
-    let seData = [${cmd}]
-    core(seData)
+    let seData${id} = [${cmd}]
+    core(seData${id},${time.value},${timeout.value})
   ` }).catch(err => {
       ElMessage.error('代码错误')
     })
@@ -351,7 +377,7 @@ const jnjeJs = () => {
 }
 
 const loadUrl = () => {
-  window.ipc.invoke('inje-load-url', { wid: 0, url: atUrl.value })
+  window.ipc.invoke('inje-load-url', { wid: 0, url: atUrl.value, UserAgent: userAgent.value })
 }
 
 
@@ -365,6 +391,16 @@ windowMessageOn("inje-get-example", (event, args) => {
   }
   body.value = (args.body as string).replaceAll(`\t`, '').replaceAll('\n', '')
 })
+
+windowMessageOn("download-err", (event, args) => {
+  ElNotification({
+    title: '下载失败回调',
+    message: `url:${args.url}\nerr:${args.err}`,
+    position: 'bottom-right',
+  })
+})
+
+
 
 
 </script>

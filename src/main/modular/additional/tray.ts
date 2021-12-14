@@ -13,17 +13,13 @@ class Trays {
     return Trays.instance;
   }
 
-  constructor() {}
+  constructor() { }
 
   /**
    * 创建托盘
    * */
   create() {
     const contextMenu = Menu.buildFromTemplate([
-      {
-        label: '显示',
-        click: () => Window.func('show')
-      },
       {
         label: '退出',
         click: () => app.quit()
@@ -32,13 +28,13 @@ class Trays {
     this.main = new Tray(nativeImage.createFromPath(join(__dirname, `../${ico}`)));
     this.main.setContextMenu(contextMenu);
     this.main.setToolTip(app.name);
-    this.main.on('click', () => Window.func('show'));
+    this.main.on('click', () => Window.func('show',1));
   }
 
   /**
    * 监听
    */
-  on() {}
+  on() { }
 }
 
 export default Trays.getInstance();

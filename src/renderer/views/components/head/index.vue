@@ -43,7 +43,8 @@ function maxMin() {
 }
 
 function close() {
-  windowClose();
+  windowClose(1);
+  windowClose(0);
 }
 
 </script>

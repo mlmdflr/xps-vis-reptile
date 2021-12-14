@@ -9,8 +9,8 @@ import { readFile } from "../modular/general/file";
 export function init(wid: number | bigint, rid: number | bigint) {
     const w = Window.get(wid)
     w.webContents.on('did-finish-load', async () => {
-
         w.webContents.executeJavaScript(`${await readFile(Global.getInstance().getInsidePath('net.js'))}`)
+        w.webContents.executeJavaScript(`${await readFile(Global.getInstance().getInsidePath('sleep.js'))}`)
         w.webContents.executeJavaScript(`${await readFile(Global.getInstance().getInsidePath('path.fs.js'))}`)
         w.webContents.executeJavaScript(`${await readFile(Global.getInstance().getInsidePath('snowflake.js'))}`)
         w.webContents.executeJavaScript(`${await readFile(Global.getInstance().getInsidePath('core.js'))}`)
@@ -95,7 +95,7 @@ export function injeOn() {
         windowHide()
     `))
     ipcMain.handle('inje-load-url', (event, args) => {
-        Window.get(args.wid).loadURL(args.url)
+        Window.get(args.wid).loadURL(args.url, { userAgent: args.UserAgent })
     })
     ipcMain.handle('inje-jsdom', (event, args) => {
         let data: any[] = []
@@ -107,10 +107,19 @@ export function injeOn() {
         }
         const body = new JSDOM(args.body)
         for (const s of args.select) {
-            body.window.document.querySelectorAll(s).forEach(x => {
+            body.window.document.querySelectorAll(s).forEach((x: HTMLElement) => {
+                const htmlStr = x.outerHTML
                 for (const a of args.attributes) {
-                    if (x[a]) {
-                        data.push(x[a])
+                    let re = new RegExp(a + "=(\"|\').+?(\"|\')", "gim");
+                    const arr = re.exec(htmlStr)
+                    if (arr) {
+                        for (let it of arr) {
+                            if (it.length > 4) {
+                                it = it.substring(it.indexOf('"') + 1)
+                                it = it.substring(0, it.lastIndexOf('"'))
+                                data.push(it)
+                            }
+                        }
                     }
                 }
             })
