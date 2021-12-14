@@ -105,7 +105,7 @@ async function core(params, time, timeout) {
 
 ### net.js
 
-封装
+封装fetch
 
 ```javascript
 "use strict";
