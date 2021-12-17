@@ -33,6 +33,7 @@ export class App {
       app.setAsDefaultProtocolClient(app.name, process.execPath, argv);
     await app.whenReady().catch(logError);
     this.afterOn();
+    app.commandLine.appendSwitch('--ignore-certificate-errors', 'true')
   }
 
   /**

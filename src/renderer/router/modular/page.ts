@@ -7,9 +7,9 @@ const Route: RouteRecordRaw[] = [
     component: () => import('@/renderer/views/pages/main/index.vue')
   },
   {
-    path: '/about',
-    name: 'About',
-    component: () => import('@/renderer/views/pages/about/index.vue')
+    path: '/img',
+    name: 'Img',
+    component: () => import('@/renderer/views/pages/imgtab/index.vue')
   }
 ];
 

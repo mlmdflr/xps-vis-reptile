@@ -19,6 +19,7 @@
   "devDependencies": {
     "@swc/core": "^1.2.118",
     "@types/jsdom": "^16.2.13",
+    "@element-plus/icons-vue": "^0.2.4",
     "css-loader": "^6.5.1",
     "electron": "^16.0.4",
     "electron-builder": "^22.14.5",
@@ -36,9 +37,9 @@
     "webpack-dev-server": "^4.6.0"
   },
   "dependencies": {
-    "jsdom": "^19.0.0",
     "electron-updater": "^4.6.1",
-    "element-plus": "^1.2.0-beta.5",
+    "element-plus": "^1.2.0-beta.6",
+    "jsdom": "^19.0.0",
     "socket.io-client": "^4.4.0"
   }
 }

@@ -31,19 +31,19 @@ await App.use([
 
 
 // 窗口
-Window.create(
-  {
-    show: false,
-    customize: {
-      id: 0,
-      url: 'https://wallhaven.cc',
-      isMainWin: true
-    },
-    frame:true
-  }
-);
+// Window.create(
+//   {
+//     show: false,
+//     customize: {
+//       id: 0,
+//       url: 'https://wallhaven.cc',
+//       isMainWin: true
+//     },
+//     frame: true
+//   }
+// );
 
-init(0, 1)
+// init(0, 1)
 
 injeOn()
 
